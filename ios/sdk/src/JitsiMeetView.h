@@ -29,6 +29,9 @@
 
 @property (nonatomic) BOOL welcomePageEnabled;
 
+@property (nonatomic) BOOL addPeopleEnabled;
+@property (nonatomic) BOOL dialOutEnabled;
+
 +             (BOOL)application:(UIApplication *_Nonnull)application
   didFinishLaunchingWithOptions:(NSDictionary *_Nonnull)launchOptions;
 

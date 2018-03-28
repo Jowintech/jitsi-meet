@@ -14,6 +14,7 @@ import {
     isNarrowAspectRatio,
     makeAspectRatioAware
 } from '../../base/responsive-ui';
+import { InviteButton } from '../../invite';
 import {
     EnterPictureInPictureToolbarButton
 } from '../../mobile/picture-in-picture';
@@ -253,10 +254,8 @@ class Toolbox extends Component<Props> {
                     underlayColor = { underlayColor } />
                 {
                     _SHARE_ROOM_TOOLBAR_BUTTON
-                        && <ToolbarButton
-                            iconName = 'link'
+                        && <InviteButton
                             iconStyle = { iconStyle }
-                            onClick = { this.props._onShareRoom }
                             style = { style }
                             underlayColor = { underlayColor } />
                 }

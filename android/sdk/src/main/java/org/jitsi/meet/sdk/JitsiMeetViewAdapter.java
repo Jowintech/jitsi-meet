@@ -46,4 +46,12 @@ public abstract class JitsiMeetViewAdapter implements JitsiMeetViewListener {
     @Override
     public void onLoadConfigError(Map<String, Object> data) {
     }
+
+    @Override
+    public void launchNativeInvite(Map<String, Object> data) {
+    }
+
+    @Override
+    public void inviteFailedForItems(Map<String, Object> data) {
+    }
 }
