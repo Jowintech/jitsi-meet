@@ -271,6 +271,8 @@ static NSMapTable<NSString *, JitsiMeetView *> *views;
     props[@"externalAPIScope"] = externalAPIScope;
     props[@"pictureInPictureEnabled"] = @(self.pictureInPictureEnabled);
     props[@"welcomePageEnabled"] = @(self.welcomePageEnabled);
+    props[@"addPeopleEnabled"] = @(self.addPeopleEnabled);
+    props[@"dialOutEnabled"] = @(self.dialOutEnabled);
 
     // XXX If urlObject is nil, then it must appear as undefined in the
     // JavaScript source code so that we check the launchOptions there.

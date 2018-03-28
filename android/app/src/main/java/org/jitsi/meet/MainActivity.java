@@ -85,6 +85,16 @@ public class MainActivity extends JitsiMeetActivity {
                 }
 
                 @Override
+                public void launchNativeInvite(Map<String, Object> data) {
+                    on("LAUNCH_NATIVE_INVITE", data);
+                }
+
+                @Override
+                public void inviteFailedForItems(Map<String, Object> data) {
+                    on("INVITE_FAILED_FOR_ITEMS", data);
+                }
+
+                @Override
                 public void onLoadConfigError(Map<String, Object> data) {
                     on("LOAD_CONFIG_ERROR", data);
                 }

@@ -20,6 +20,8 @@ public typealias CompletionAction = (Bool) -> Void
 /// A window that allows its root view controller to be presented
 /// in full screen or in a custom Picture in Picture mode
 open class PiPWindow: UIWindow {
+
+    private var previousKeyWindow: UIWindow?
     
     /// Limits the boundries of root view position on screen when minimized
     public var dragBoundInsets: UIEdgeInsets = UIEdgeInsets(top: 25,
@@ -64,13 +66,17 @@ open class PiPWindow: UIWindow {
     
     /// animate in the window
     open func show(completion: CompletionAction? = nil) {
+        previousKeyWindow = UIApplication.shared.keyWindow
         if self.isHidden || self.alpha < 1 {
             self.isHidden = false
             self.alpha = 0
             
             animateTransition(animations: {
                 self.alpha = 1
-            }, completion: completion)
+            }, completion: { finished in
+                self.makeKey()
+                completion?(finished)
+            })
         }
     }
     
@@ -79,7 +85,10 @@ open class PiPWindow: UIWindow {
         if !self.isHidden || self.alpha > 0 {
             animateTransition(animations: {
                 self.alpha = 1
-            }, completion: completion)
+            }, completion: { finished in
+                self.previousKeyWindow?.makeKey()
+                completion?(finished)
+            })
         }
     }
     
@@ -97,6 +106,8 @@ open class PiPWindow: UIWindow {
                                                           action: exitSelector)
         self.tapGestureRecognizer = tapGestureRecognizer
         view.addGestureRecognizer(tapGestureRecognizer)
+
+        previousKeyWindow?.makeKey()
     }
     
     /// Resize the root view to full screen
@@ -113,6 +124,8 @@ open class PiPWindow: UIWindow {
         let exitSelector = #selector(toggleExitPiP)
         tapGestureRecognizer?.removeTarget(self, action: exitSelector)
         tapGestureRecognizer = nil
+
+        makeKey()
     }
     
     /// Stop the dragging gesture of the root view

@@ -78,6 +78,7 @@ open class JitsiMeetPresentationCoordinator: NSObject {
         meetWindow.backgroundColor = .clear
         meetWindow.windowLevel = UIWindowLevelStatusBar + 100
         meetWindow.rootViewController = self.meetViewController
+        meetWindow.makeKey()
     }
 }
 
@@ -87,11 +88,18 @@ extension JitsiMeetPresentationCoordinator: JitsiMeetViewControllerDelegate {
         switch to {
         case .enterPictureInPicture:
             meetWindow.enterPictureInPicture()
+
         case .sizeChange:
             // resize to full screen if rotation happens
             if meetWindow.isInPiP {
                 meetWindow.exitPictureInPicture()
             }
+
+        case .launchNativeInvite(let searchController):
+            launchNativeInvite(for: searchController)
+
+        case .inviteDidFailForItems(let items):
+            inviteDidFail(for: items)
         }
     }
     
@@ -103,5 +111,13 @@ extension JitsiMeetPresentationCoordinator: JitsiMeetViewControllerDelegate {
     
     open func conferenceEnded(didFail: Bool) {
         cleanUp()
+    }
+
+    open func launchNativeInvite(for searchController: InviteSearchController) {
+        // Abstract - Subclass can override
+    }
+
+    open func inviteDidFail(for items: [[AnyHashable: Any]]) {
+        // Abstract - Subclass can override
     }
 }

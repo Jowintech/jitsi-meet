@@ -5,8 +5,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { getLocalParticipant, PARTICIPANT_ROLE } from '../../base/participants';
-import { InviteButton } from '../../invite';
+import {
+    InviteButton,
+    isAddToCallEnabled,
+    isDialOutAvailable
+} from '../../invite';
 import { Toolbox } from '../../toolbox';
 
 import { setFilmstripHovered } from '../actions';
@@ -215,26 +218,20 @@ class Filmstrip extends Component<*> {
  * }}
  */
 function _mapStateToProps(state) {
-    const { conference } = state['features/base/conference'];
     const {
-        enableUserRolesBasedOnToken,
         iAmRecorder
     } = state['features/base/config'];
-    const { isGuest } = state['features/base/jwt'];
     const { hovered } = state['features/filmstrip'];
 
-    const isAddToCallAvailable = !isGuest;
-    const isDialOutAvailable
-        = getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR
-                && conference && conference.isSIPCallingSupported()
-                && (!enableUserRolesBasedOnToken || !isGuest);
+    const _isAddToCallAvailable = isAddToCallEnabled(state);
+    const _isDialOutAvailable = isDialOutAvailable(state);
 
     return {
         _hideInviteButton: iAmRecorder
-            || (!isAddToCallAvailable && !isDialOutAvailable),
+            || (!_isAddToCallAvailable && !_isDialOutAvailable),
         _hovered: hovered,
-        _isAddToCallAvailable: isAddToCallAvailable,
-        _isDialOutAvailable: isDialOutAvailable,
+        _isAddToCallAvailable,
+        _isDialOutAvailable,
         _remoteVideosVisible: shouldRemoteVideosBeVisible(state)
     };
 }

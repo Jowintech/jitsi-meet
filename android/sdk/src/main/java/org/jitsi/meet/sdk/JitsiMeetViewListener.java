@@ -60,6 +60,20 @@ public interface JitsiMeetViewListener {
     void onConferenceWillLeave(Map<String, Object> data);
 
     /**
+     * Called when the add user button is tapped.
+     *
+     * @param data map with "userSearch" key with the {@link InviteSearchController} object
+     */
+    void launchNativeInvite(Map<String, Object> data);
+
+    /**
+     * Called when an invitation fails for one or many items.
+     *
+     * @param data map with "items" key with an array of the {@link Map<String, Object>} items that failed to be invited
+     */
+    void inviteFailedForItems(Map<String, Object> data);
+
+    /**
      * Called when loading the main configuration file from the Jitsi Meet
      * deployment fails.
      *
