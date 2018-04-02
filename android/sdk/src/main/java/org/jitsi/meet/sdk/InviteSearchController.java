@@ -5,7 +5,6 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,9 +39,13 @@ public class InviteSearchController {
     public void submitSelectedItemIds(List<String> ids) {
         WritableArray selectedItems = new WritableNativeArray();
         for(int i=0; i<ids.size(); i++) {
-            WritableNativeMap map = new WritableNativeMap();
-            map.merge(items.get(ids.get(i)));
-            selectedItems.pushMap(map);
+            if(items.containsKey(ids.get(i))) {
+                WritableNativeMap map = new WritableNativeMap();
+                map.merge(items.get(ids.get(i)));
+                selectedItems.pushMap(map);
+            } else {
+                // if the id doesn't exist in the map, we can't do anything, so just skip it
+            }
         }
 
         JitsiMeetView.submitSelectedItems(selectedItems);
