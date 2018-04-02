@@ -285,23 +285,23 @@ public class JitsiMeetView extends FrameLayout {
     /**
      * Sends JavaScript event to submit invitations to the given item ids
      *
-     * @param selectedItems
+     * @param selectedItems a WritableArray of WritableNativeMaps representing selected items.
+     *                  Each map representing a selected item should match the data passed
+     *                  back in the return from a query.
      */
     public static void submitSelectedItems(WritableArray selectedItems) {
-        WritableNativeMap params = new WritableNativeMap();
-        params.putArray("selectedItemIds", selectedItems);
-        sendEvent("performSubmitInviteAction", params);
+        sendEvent("performSubmitInviteAction", selectedItems);
     }
 
     /**
      * Helper function to send an event to JavaScript.
      *
      * @param eventName {@code String} containing the event name.
-     * @param params {@code WritableMap} optional ancillary data for the event.
+     * @param data {@code Object} optional ancillary data for the event.
      */
     private static void sendEvent(
             String eventName,
-            @Nullable WritableMap params) {
+            @Nullable Object data) {
         if (reactInstanceManager != null) {
             ReactContext reactContext
                 = reactInstanceManager.getCurrentReactContext();
@@ -309,7 +309,7 @@ public class JitsiMeetView extends FrameLayout {
                 reactContext
                     .getJSModule(
                         DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit(eventName, params);
+                    .emit(eventName, data);
             }
         }
     }
