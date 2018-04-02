@@ -349,7 +349,8 @@ class AddPeopleDialog extends Component<*, *> {
             _inviteUrl
         } = this.props;
 
-        const items = this.state.inviteItems.map(item => item.item);
+        const inviteItems = this.state.inviteItems;
+        const items = inviteItems.map(item => item.item);
 
         sendInvitesForItems( // eslint-disable-line max-params
                 items,
@@ -380,8 +381,18 @@ class AddPeopleDialog extends Component<*, *> {
                         addToCallError: true
                     });
 
+                    const unsentInviteIDs = invitesLeftToSend.map(invite =>
+                        invite.id || invite.number
+                    );
+
+                    const itemsToSelect = inviteItems.filter(invite =>
+                        unsentInviteIDs.includes(
+                            invite.item.id || invite.item.number
+                        )
+                    );
+
                     if (this._multiselect) {
-                        this._multiselect.setSelectedItems(invitesLeftToSend);
+                        this._multiselect.setSelectedItems(itemsToSelect);
                     }
 
                     return;

@@ -311,7 +311,7 @@ export function sendInvitesForItems( // eslint-disable-line max-params
     let invitesLeftToSend = [ ...items ];
 
     // First create all promises for dialing out.
-    if (enableAddPeople && conference) {
+    if (enableDialOut && conference) {
         const phoneNumbers = invitesLeftToSend.filter(
             item => item.type === 'phone');
 
