@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import {
     InviteButton,
     isAddToCallEnabled,
-    isDialOutAvailable
+    isDialOutEnabled
 } from '../../invite';
 import { Toolbox } from '../../toolbox';
 
@@ -224,7 +224,7 @@ function _mapStateToProps(state) {
     const { hovered } = state['features/filmstrip'];
 
     const _isAddToCallAvailable = isAddToCallEnabled(state);
-    const _isDialOutAvailable = isDialOutAvailable(state);
+    const _isDialOutAvailable = isDialOutEnabled(state);
 
     return {
         _hideInviteButton: iAmRecorder
