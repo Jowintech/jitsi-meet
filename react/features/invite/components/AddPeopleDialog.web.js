@@ -341,26 +341,24 @@ class AddPeopleDialog extends Component<*, *> {
         });
 
         const {
-            enableAddPeople,
-            enableDialOut,
-            _jwt,
             _conference,
             _inviteServiceUrl,
-            _inviteUrl
+            _inviteUrl,
+            _jwt
         } = this.props;
 
         const inviteItems = this.state.inviteItems;
         const items = inviteItems.map(item => item.item);
 
-        sendInvitesForItems( // eslint-disable-line max-params
-                items,
-                enableAddPeople,
-                enableDialOut,
-                _jwt,
-                _conference,
-                _inviteServiceUrl,
-                _inviteUrl,
-                this.props.inviteVideoRooms)
+        const options = {
+            conference: _conference,
+            inviteServiceUrl: _inviteServiceUrl,
+            inviteUrl: _inviteUrl,
+            inviteVideoRooms: this.props.inviteVideoRooms,
+            jwt: _jwt
+        };
+
+        sendInvitesForItems(items, options)
             .then(invitesLeftToSend => {
                 // If any invites are left that means something failed to send
                 // so treat it as an error.
@@ -491,15 +489,16 @@ class AddPeopleDialog extends Component<*, *> {
             _peopleSearchUrl
         } = this.props;
 
-        return getInviteResultsForQuery(
-            query,
+        const options = {
+            dialOutAuthUrl: _dialOutAuthUrl,
             enableAddPeople,
             enableDialOut,
-            _jwt,
-            _peopleSearchUrl,
-            _peopleSearchQueryTypes,
-            _dialOutAuthUrl
-        );
+            peopleSearchQueryTypes: _peopleSearchQueryTypes,
+            peopleSearchUrl: _peopleSearchUrl,
+            jwt: _jwt
+        };
+
+        return getInviteResultsForQuery(query, options);
     }
 
     /**

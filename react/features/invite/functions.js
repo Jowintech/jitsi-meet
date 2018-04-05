@@ -168,29 +168,63 @@ function getDigitsOnly(text: string = ''): string {
 }
 
 /**
+ * Type of the options to use when sending a search query.
+ */
+export type GetInviteResultsOptions = {
+
+    /**
+     * The endpoint to use for checking phone number validity.
+     */
+    dialOutAuthUrl: string,
+
+    /**
+     * Whether or not to search for people.
+     */
+    enableAddPeople: boolean,
+
+    /**
+     * Whether or not to check phone numbers.
+     */
+    enableDialOut: boolean,
+
+    /**
+     * Array with the query types that will be executed -
+     * "conferenceRooms" | "user" | "room".
+     */
+    peopleSearchQueryTypes: Array<string>,
+
+    /**
+     * The url to query for people.
+     */
+    peopleSearchUrl: string,
+
+    /**
+     * The jwt token to pass to the search service.
+     */
+    jwt: string
+};
+
+/**
  * Combines directory search with phone number validation to produce a single
  * set of invite search results.
  *
  * @param  {string} query - Text to search.
- * @param  {boolean} enableAddPeople - Whether or not to search for people.
- * @param  {boolean} enableDialOut - Whether or not to check phone numbers.
- * @param  {string} jwt - The jwt token to pass to the search service.
- * @param  {string} peopleSearchUrl - The url to query for people.
- * @param  {Array<string>} peopleSearchQueryTypes - Array with the query types
- * that will be executed - "conferenceRooms" | "user" | "room".
- * @param  {string} dialOutAuthUrl - The endpoint to use for checking phone
- * number validity.
+ * @param  {GetInviteResultsOptions} options - Options to use when searching.
  * @returns {Promise<*>}
  */
-export function getInviteResultsForQuery( // eslint-disable-line max-params
+export function getInviteResultsForQuery(
         query: string,
-        enableAddPeople: boolean,
-        enableDialOut: boolean,
-        jwt: string,
-        peopleSearchUrl: string,
-        peopleSearchQueryTypes: Array<string>,
-        dialOutAuthUrl: string): Promise<*> {
+        options: GetInviteResultsOptions): Promise<*> {
     const text = query.trim();
+
+    const {
+        dialOutAuthUrl,
+        enableAddPeople,
+        enableDialOut,
+        peopleSearchQueryTypes,
+        peopleSearchUrl,
+        jwt
+    } = options;
 
     let peopleSearchPromise;
 
@@ -282,36 +316,68 @@ function isMaybeAPhoneNumber(text: string): boolean {
 }
 
 /**
+ * Type of the options to use when sending invites.
+ */
+export type SendInvitesOptions = {
+
+    /**
+     * Conference object used to dial out.
+     */
+    conference: Object,
+
+    /**
+     * The URL to send invites through.
+     */
+    inviteServiceUrl: string,
+
+    /**
+     * The URL sent with each invite.
+     */
+    inviteUrl: string,
+
+    /**
+     * The function to use to invite video rooms.
+     *
+     * @param  {Object} The conference to which the video rooms should be
+     * invited.
+     * @param  {Array<Object>} The list of rooms that should be invited.
+     * @returns {void}
+     */
+    inviteVideoRooms: (Object, Array<Object>) => void,
+
+    /**
+     * The jwt token to pass to the invite service.
+     */
+    jwt: string
+};
+
+/**
  * Send invites for a list of items (may be a combination of users, rooms, phone
  * numbers, and video rooms).
  *
- * @param  {Array<Object>} items - Items for which invites should be sent.
- * @param  {boolean} enableAddPeople - Whether or not to search for people.
- * @param  {boolean} enableDialOut - Whether or not to check phone numbers.
- * @param  {string} jwt - The jwt token to pass to the search service.
- * @param  {Object} conference - Conference object used to dial out.
- * @param  {string} inviteServiceUrl - The URL to send invites through.
- * @param  {string} inviteUrl - The URL sent with each invite.
- * @param  {Function} inviteVideoRooms - The function used to invite video
- * rooms.
+ * @param  {Array<Object>} invites - Items for which invites should be sent.
+ * @param  {SendInvitesOptions} options - Options to use when sending the
+ * provided invites.
  * @returns {Promise} Promise containing the list of invites that were not sent.
  */
-export function sendInvitesForItems( // eslint-disable-line max-params
-        items: Array<Object>,
-        enableAddPeople: boolean,
-        enableDialOut: boolean,
-        jwt: string,
-        conference: Object,
-        inviteServiceUrl: string,
-        inviteUrl: string,
-        inviteVideoRooms: (Object, Array<Object>) => boolean
+export function sendInvitesForItems(
+        invites: Array<Object>,
+        options: SendInvitesOptions
 ): Promise<Array<Object>> {
 
+    const {
+        conference,
+        inviteServiceUrl,
+        inviteUrl,
+        inviteVideoRooms,
+        jwt
+    } = options;
+
     let allInvitePromises = [];
-    let invitesLeftToSend = [ ...items ];
+    let invitesLeftToSend = [ ...invites ];
 
     // First create all promises for dialing out.
-    if (enableDialOut && conference) {
+    if (conference) {
         const phoneNumbers = invitesLeftToSend.filter(
             item => item.type === 'phone');
 
@@ -334,40 +400,38 @@ export function sendInvitesForItems( // eslint-disable-line max-params
         allInvitePromises = allInvitePromises.concat(phoneInvitePromises);
     }
 
-    if (enableAddPeople) {
-        const usersAndRooms = invitesLeftToSend.filter(item =>
-            item.type === 'user' || item.type === 'room');
+    const usersAndRooms = invitesLeftToSend.filter(item =>
+        item.type === 'user' || item.type === 'room');
 
-        if (usersAndRooms.length) {
-            // Send a request to invite all the rooms and users. On success,
-            // filter all rooms and users from {@link invitesLeftToSend}.
-            const peopleInvitePromise = invitePeopleAndChatRooms(
-                inviteServiceUrl,
-                inviteUrl,
-                jwt,
-                usersAndRooms)
-                .then(() => {
-                    invitesLeftToSend = invitesLeftToSend.filter(item =>
-                        item.type !== 'user' && item.type !== 'room');
-                })
-                .catch(error => logger.error(
-                    'Error inviting people:', error));
+    if (usersAndRooms.length) {
+        // Send a request to invite all the rooms and users. On success,
+        // filter all rooms and users from {@link invitesLeftToSend}.
+        const peopleInvitePromise = invitePeopleAndChatRooms(
+            inviteServiceUrl,
+            inviteUrl,
+            jwt,
+            usersAndRooms)
+            .then(() => {
+                invitesLeftToSend = invitesLeftToSend.filter(item =>
+                    item.type !== 'user' && item.type !== 'room');
+            })
+            .catch(error => logger.error(
+                'Error inviting people:', error));
 
-            allInvitePromises.push(peopleInvitePromise);
-        }
-
-        // Sipgw calls are fire and forget. Invite them to the conference
-        // then immediately remove them from {@link invitesLeftToSend}.
-        const vrooms = invitesLeftToSend.filter(item =>
-            item.type === 'videosipgw');
-
-        conference
-            && vrooms.length > 0
-            && inviteVideoRooms(conference, vrooms);
-
-        invitesLeftToSend = invitesLeftToSend.filter(item =>
-            item.type !== 'videosipgw');
+        allInvitePromises.push(peopleInvitePromise);
     }
+
+    // Sipgw calls are fire and forget. Invite them to the conference
+    // then immediately remove them from {@link invitesLeftToSend}.
+    const vrooms = invitesLeftToSend.filter(item =>
+        item.type === 'videosipgw');
+
+    conference
+        && vrooms.length > 0
+        && inviteVideoRooms(conference, vrooms);
+
+    invitesLeftToSend = invitesLeftToSend.filter(item =>
+        item.type !== 'videosipgw');
 
     return Promise.all(allInvitePromises)
         .then(() => invitesLeftToSend);

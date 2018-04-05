@@ -166,36 +166,39 @@ function _onPerformQueryAction({ query, inviteScope }) {
         peopleSearchUrl
     } = state['features/base/config'];
 
-    getInviteResultsForQuery(
-        query,
-        isAddToCallEnabled(state),
-        isDialOutEnabled(state),
-        state['features/base/jwt'].jwt,
-        peopleSearchUrl,
+    const options = {
+        dialOutAuthUrl,
+        enableAddPeople: isAddToCallEnabled(state),
+        enableDialOut: isDialOutEnabled(state),
         peopleSearchQueryTypes,
-        dialOutAuthUrl
-    )
-    .catch(() => [])
-    .then(results => {
-        const translatedResults = results.map(result => {
-            if (result.type === 'phone') {
-                result.title = i18next.t('addPeople.telephone', {
-                    number: result.number
-                });
+        peopleSearchUrl,
+        jwt: state['features/base/jwt'].jwt
+    };
 
-                if (result.showCountryCodeReminder) {
-                    result.subtitle = i18next.t('addPeople.countryReminder');
+    getInviteResultsForQuery(query, options)
+        .catch(() => [])
+        .then(results => {
+            const translatedResults = results.map(result => {
+                if (result.type === 'phone') {
+                    result.title = i18next.t('addPeople.telephone', {
+                        number: result.number
+                    });
+
+                    if (result.showCountryCodeReminder) {
+                        result.subtitle = i18next.t(
+                            'addPeople.countryReminder'
+                        );
+                    }
                 }
-            }
 
-            return result;
-        }).filter(result => result.type !== 'phone' || result.allowed);
+                return result;
+            }).filter(result => result.type !== 'phone' || result.allowed);
 
-        NativeModules.InviteSearch.receivedResults(
-            translatedResults,
-            query,
-            inviteScope);
-    });
+            NativeModules.InviteSearch.receivedResults(
+                translatedResults,
+                query,
+                inviteScope);
+        });
 }
 
 /**
@@ -215,15 +218,15 @@ function _onPerformSubmitInviteAction({ selectedItems, inviteScope }) {
         inviteServiceUrl
     } = state['features/base/config'];
 
-    sendInvitesForItems( // eslint-disable-line max-params
-            selectedItems,
-            isAddToCallEnabled(state),
-            isDialOutEnabled(state),
-            state['features/base/jwt'].jwt,
-            conference,
-            inviteServiceUrl,
-            getInviteURL(state),
-            inviteVideoRooms)
+    const options = {
+        conference,
+        inviteServiceUrl,
+        inviteUrl: getInviteURL(state),
+        inviteVideoRooms,
+        jwt: state['features/base/jwt'].jwt
+    };
+
+    sendInvitesForItems(selectedItems, options)
         .then(invitesLeftToSend => {
             if (invitesLeftToSend.length) {
                 dispatch(sendInviteFailure(invitesLeftToSend, inviteScope));
