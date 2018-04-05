@@ -14,10 +14,11 @@ import {
 } from '../../invite';
 import { inviteVideoRooms } from '../../videosipgw';
 
-import { sendInviteFailure } from './actions';
+import { sendInviteSuccess, sendInviteFailure } from './actions';
 import {
     _SET_INVITE_SEARCH_SUBSCRIPTIONS,
     LAUNCH_NATIVE_INVITE,
+    SEND_INVITE_SUCCESS,
     SEND_INVITE_FAILURE
 } from './actionTypes';
 
@@ -47,8 +48,12 @@ MiddlewareRegistry.register(store => next => action => {
         launchNativeInvite(store);
         break;
 
+    case SEND_INVITE_SUCCESS:
+        onSendInviteSuccess(action);
+        break;
+
     case SEND_INVITE_FAILURE:
-        onSendInviteFailure(store, action.items);
+        onSendInviteFailure(action);
         break;
     }
 
@@ -120,29 +125,27 @@ function launchNativeInvite(store: { getState: Function }) {
 }
 
 /**
+ * Sends a notification to the native counterpart of InviteSearch that all
+ * invites were sent successfully.
+ *
+ * @param  {Object} action - The redux action {@code SEND_INVITE_SUCCESS} which
+ * is being dispatched.
+ * @returns {void}
+ */
+function onSendInviteSuccess({ inviteScope }) {
+    NativeModules.InviteSearch.inviteSucceeded(inviteScope);
+}
+
+/**
  * Sends a notification to the native counterpart of InviteSearch that some
  * invite items failed to send successfully.
  *
- * @param  {Object} store - The redux store.
- * @param  {Array<*>} items - Invite items that failed to send.
+ * @param  {Object} action - The redux action {@code SEND_INVITE_FAILURE} which
+ * is being dispatched.
  * @returns {void}
  */
-function onSendInviteFailure(store: { getState: Function }, items: Array<*>) {
-    // The JavaScript App needs to provide uniquely identifying information
-    // to the native module so that the latter may match the former
-    // to the native JitsiMeetView which hosts it.
-    const { app } = store.getState()['features/app'];
-
-    if (app) {
-        const { externalAPIScope } = app.props;
-
-        if (externalAPIScope) {
-            NativeModules.InviteSearch.inviteFailedForItems(
-                items,
-                externalAPIScope
-            );
-        }
-    }
+function onSendInviteFailure({ items, inviteScope }) {
+    NativeModules.InviteSearch.inviteFailedForItems(items, inviteScope);
 }
 
 /**
@@ -152,12 +155,10 @@ function onSendInviteFailure(store: { getState: Function }, items: Array<*>) {
  * {@code performQueryAction}.
  * @returns {void}
  */
-function _onPerformQueryAction({ query }) {
+function _onPerformQueryAction({ query, inviteScope }) {
     const { getState } = this; // eslint-disable-line no-invalid-this
 
     const state = getState();
-
-    const { app } = state['features/app'];
 
     const {
         dialOutAuthUrl,
@@ -193,17 +194,17 @@ function _onPerformQueryAction({ query }) {
         NativeModules.InviteSearch.receivedResults(
             translatedResults,
             query,
-            app.props.externalAPIScope);
+            inviteScope);
     });
 }
 
 /**
  * Handles InviteSearch's event {@code performSubmitInviteAction}.
  *
- * @param {Array<string>} selectedItems - The items to invite.
+ * @param {Object} event - The details of the InviteSearch event.
  * @returns {void}
  */
-function _onPerformSubmitInviteAction(selectedItems: Array<string>) {
+function _onPerformSubmitInviteAction({ selectedItems, inviteScope }) {
     const { dispatch, getState } = this; // eslint-disable-line no-invalid-this
 
     const state = getState();
@@ -225,7 +226,9 @@ function _onPerformSubmitInviteAction(selectedItems: Array<string>) {
             inviteVideoRooms)
         .then(invitesLeftToSend => {
             if (invitesLeftToSend.length) {
-                dispatch(sendInviteFailure(invitesLeftToSend));
+                dispatch(sendInviteFailure(invitesLeftToSend, inviteScope));
+            } else {
+                dispatch(sendInviteSuccess(inviteScope));
             }
         });
 }

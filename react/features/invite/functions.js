@@ -398,7 +398,9 @@ export function isDialOutEnabled(state: Object): boolean {
     const { isGuest } = state['features/base/jwt'];
     const { enableUserRolesBasedOnToken } = state['features/base/config'];
 
-    return getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR
+    const participant = getLocalParticipant(state);
+
+    return participant && participant.role === PARTICIPANT_ROLE.MODERATOR
                 && conference && conference.isSIPCallingSupported()
                 && (!enableUserRolesBasedOnToken || !isGuest);
 }

@@ -67,11 +67,6 @@
 - (void)launchNativeInviteForSearchController:(InviteSearchController *)searchController;
 
 /**
- * Called when one or more invitations fails to send successfully.
- */
-- (void)inviteDidFailForItems:(NSArray<NSDictionary *> *)items;
-
-/**
  * Called when entering Picture-in-Picture is requested by the user. The app
  * should now activate its Picture-in-Picture implementation (and resize the
  * associated `JitsiMeetView`. The latter will automatically detect its new size
