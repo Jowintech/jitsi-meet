@@ -97,9 +97,6 @@ extension JitsiMeetPresentationCoordinator: JitsiMeetViewControllerDelegate {
 
         case .launchNativeInvite(let searchController):
             launchNativeInvite(for: searchController)
-
-        case .inviteDidFailForItems(let items):
-            inviteDidFail(for: items)
         }
     }
     
@@ -114,10 +111,6 @@ extension JitsiMeetPresentationCoordinator: JitsiMeetViewControllerDelegate {
     }
 
     open func launchNativeInvite(for searchController: InviteSearchController) {
-        // Abstract - Subclass can override
-    }
-
-    open func inviteDidFail(for items: [[AnyHashable: Any]]) {
         // Abstract - Subclass can override
     }
 }

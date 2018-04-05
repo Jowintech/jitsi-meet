@@ -22,9 +22,8 @@ public enum JitsiMeetPresentationUpdate {
     /// A screen size change (usually screen rotation)
     case sizeChange
 
+    /// The conference needs to launch a native invite UI
     case launchNativeInvite(InviteSearchController)
-
-    case inviteDidFailForItems([[AnyHashable: Any]])
 }
 
 public protocol JitsiMeetViewControllerDelegate: class {
@@ -110,15 +109,9 @@ extension JitsiMeetViewController: JitsiMeetViewDelegate {
         }
     }
 
-    open func launchNativeInvite(for searchController: InviteSearchController!) {
+    open func launchNativeInvite(for searchController: InviteSearchController) {
         DispatchQueue.main.async {
             self.delegate?.performPresentationUpdate(to: .launchNativeInvite(searchController))
-        }
-    }
-
-    open func inviteDidFail(forItems items: [[AnyHashable : Any]]!) {
-        DispatchQueue.main.async {
-            self.delegate?.performPresentationUpdate(to: .inviteDidFailForItems(items))
         }
     }
 }
