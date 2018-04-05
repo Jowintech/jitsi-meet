@@ -97,7 +97,8 @@ function _mapDispatchToProps(dispatch) {
  * @param {Object} state - The Redux state.
  * @private
  * @returns {{
- *     _isAddToCallAvailable: boolean
+ *     enableAddPeople: boolean,
+ *     enableDialOut: boolean
  * }}
  */
 function _mapStateToProps(state) {
