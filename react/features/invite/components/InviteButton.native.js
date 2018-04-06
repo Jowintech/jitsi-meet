@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { getLocalParticipant, PARTICIPANT_ROLE } from '../../base/participants';
 import { launchNativeInvite } from '../../mobile/invite-search';
 import { ToolbarButton } from '../../toolbox';
 
@@ -89,36 +88,4 @@ function _mapDispatchToProps(dispatch) {
     };
 }
 
-/**
- * Maps (parts of) the Redux state to the associated {@code InviteButton}'s
- * props.
- *
- * @param {Object} state - The Redux state.
- * @private
- * @returns {{
- *     enableAddPeople: boolean,
- *     enableDialOut: boolean
- * }}
- */
-function _mapStateToProps(state) {
-    const { app } = state['features/app'];
-
-    const { conference } = state['features/base/conference'];
-    const { isGuest } = state['features/base/jwt'];
-    const { enableUserRolesBasedOnToken } = state['features/base/config'];
-
-    const addPeopleEnabled = !isGuest
-        && Boolean(app && app.props.addPeopleEnabled);
-
-    const isDialOutAvailable
-        = getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR
-                && conference && conference.isSIPCallingSupported()
-                && (!enableUserRolesBasedOnToken || !isGuest);
-
-    return {
-        enableAddPeople: addPeopleEnabled,
-        enableDialOut: isDialOutAvailable
-    };
-}
-
-export default connect(_mapStateToProps, _mapDispatchToProps)(InviteButton);
+export default connect(undefined, _mapDispatchToProps)(InviteButton);
