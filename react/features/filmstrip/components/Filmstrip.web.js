@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import {
     InviteButton,
-    isAddToCallEnabled,
+    isAddPeopleEnabled,
     isDialOutEnabled
 } from '../../invite';
 import { Toolbox } from '../../toolbox';
@@ -37,6 +37,18 @@ class Filmstrip extends Component<*> {
      */
     static propTypes = {
         /**
+         * Whether or not the feature to directly invite people into the
+         * conference is available.
+         */
+        _enableAddPeople: PropTypes.bool,
+
+        /**
+         * Whether or not the feature to dial out to number to join the
+         * conference is available.
+         */
+        _enableDialOut: PropTypes.bool,
+
+        /**
          * Whether invite button rendering should be skipped,
          * by default it is. false
          */
@@ -46,18 +58,6 @@ class Filmstrip extends Component<*> {
          * Whether or not remote videos are currently being hovered over.
          */
         _hovered: PropTypes.bool,
-
-        /**
-         * Whether or not the feature to directly invite people into the
-         * conference is available.
-         */
-        _isAddToCallAvailable: PropTypes.bool,
-
-        /**
-         * Whether or not the feature to dial out to number to join the
-         * conference is available.
-         */
-        _isDialOutAvailable: PropTypes.bool,
 
         /**
          * Whether or not the remote videos should be visible. Will toggle
@@ -111,8 +111,8 @@ class Filmstrip extends Component<*> {
     render() {
         const {
             _hideInviteButton,
-            _isAddToCallAvailable,
-            _isDialOutAvailable,
+            _enableAddPeople,
+            _enableDialOut,
             _remoteVideosVisible,
             filmstripOnly
         } = this.props;
@@ -143,8 +143,8 @@ class Filmstrip extends Component<*> {
                         { filmstripOnly || _hideInviteButton
                             ? null
                             : <InviteButton
-                                enableAddPeople = { _isAddToCallAvailable }
-                                enableDialOut = { _isDialOutAvailable } /> }
+                                enableAddPeople = { _enableAddPeople }
+                                enableDialOut = { _enableDialOut } /> }
                         <div id = 'filmstripLocalVideoThumbnail' />
                     </div>
                     <div
@@ -212,8 +212,8 @@ class Filmstrip extends Component<*> {
  * @returns {{
  *     _hideInviteButton: boolean,
  *     _hovered: boolean,
- *     _isAddToCallAvailable: boolean,
- *     _isDialOutAvailable: boolean,
+ *     _enableAddPeople: boolean,
+ *     _enableDialOut: boolean,
  *     _remoteVideosVisible: boolean
  * }}
  */
@@ -223,15 +223,15 @@ function _mapStateToProps(state) {
     } = state['features/base/config'];
     const { hovered } = state['features/filmstrip'];
 
-    const _isAddToCallAvailable = isAddToCallEnabled(state);
-    const _isDialOutAvailable = isDialOutEnabled(state);
+    const _enableAddPeople = isAddPeopleEnabled(state);
+    const _enableDialOut = isDialOutEnabled(state);
 
     return {
         _hideInviteButton: iAmRecorder
-            || (!_isAddToCallAvailable && !_isDialOutAvailable),
+            || (!_enableAddPeople && !_enableDialOut),
         _hovered: hovered,
-        _isAddToCallAvailable,
-        _isDialOutAvailable,
+        _enableAddPeople,
+        _enableDialOut,
         _remoteVideosVisible: shouldRemoteVideosBeVisible(state)
     };
 }

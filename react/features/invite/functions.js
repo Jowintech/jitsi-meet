@@ -423,7 +423,7 @@ export function sendInvitesForItems(
  * @param {boolean} state - Current state.
  * @returns {boolean} Indication of whether adding people is currently enabled.
  */
-export function isAddToCallEnabled(state: Object): boolean {
+export function isAddPeopleEnabled(state: Object): boolean {
     const { app } = state['features/app'];
 
     const { isGuest } = state['features/base/jwt'];

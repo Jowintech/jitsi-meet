@@ -8,7 +8,7 @@ import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../app';
 import { getInviteURL } from '../../base/connection';
 import {
     getInviteResultsForQuery,
-    isAddToCallEnabled,
+    isAddPeopleEnabled,
     isDialOutEnabled,
     sendInvitesForItems
 } from '../../invite';
@@ -168,7 +168,7 @@ function _onPerformQueryAction({ query, inviteScope }) {
 
     const options = {
         dialOutAuthUrl,
-        enableAddPeople: isAddToCallEnabled(state),
+        enableAddPeople: isAddPeopleEnabled(state),
         enableDialOut: isDialOutEnabled(state),
         peopleSearchQueryTypes,
         peopleSearchUrl,
