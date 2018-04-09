@@ -1,5 +1,7 @@
 package org.jitsi.meet.sdk;
 
+import android.util.Log;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -15,6 +17,14 @@ import java.util.Map;
  */
 class InviteSearchModule extends ReactContextBaseJavaModule {
 
+    /**
+     * Map of InviteSearchController objects passed to connected JitsiMeetView.
+     * A call to launchNativeInvite will create a new InviteSearchController and pass
+     * it back to the caller.  On a successful invitation, the controller will be removed automatically.
+     * On a failed invitation, the caller has the option of calling InviteSearchController#cancelSearch()
+     * to remove the controller from this map.  The controller should also be removed if the user cancels
+     * the invitation flow.
+     */
     private Map<String, InviteSearchController> searchControllers = new HashMap<>();
 
     public InviteSearchModule(ReactApplicationContext reactContext) {
@@ -38,11 +48,8 @@ class InviteSearchModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        InviteSearchController controller = createSearchControllerForScope(externalAPIScope);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("userSearch", controller);
-        viewToLaunchInvite.getListener().launchNativeInvite(data);
+        InviteSearchController controller = createSearchController();
+        viewToLaunchInvite.getListener().launchNativeInvite(controller);
     }
 
     /**
@@ -50,32 +57,33 @@ class InviteSearchModule extends ReactContextBaseJavaModule {
      *
      * @param results the results in a ReadableArray of ReadableMap objects
      * @param query the query associated with the search
-     * @param scope a string that represents a connection to a specific JitsiMeetView
+     * @param inviteSearchControllerScope a string that represents a connection to a specific InviteSearchController
      */
     @ReactMethod
-    public void receivedResults(ReadableArray results, String query, String scope) {
-        InviteSearchController controller = searchControllers.get(scope);
+    public void receivedResults(ReadableArray results, String query, String inviteSearchControllerScope) {
+        InviteSearchController controller = searchControllers.get(inviteSearchControllerScope);
 
-        if(controller != null) {
-            controller.receivedResultsForQuery(results, query);
+        if(controller == null) {
+            Log.w("InviteSearchModule", "Received results, but unable to find active controller to send results back");
+            return;
         }
+
+        controller.receivedResultsForQuery(results, query);
+
     }
 
     /**
      * Callback for invitation failures
      *
      * @param items the items for which the invitation failed
-     * @param scope a string that represents a connection to a specific JitsiMeetView
+     * @param inviteSearchControllerScope a string that represents a connection to a specific InviteSearchController
      */
     @ReactMethod
-    public void inviteFailedForItems(ReadableArray items, String scope) {
-        JitsiMeetView viewToLaunchInvite = JitsiMeetView.findViewByExternalAPIScope(scope);
+    public void inviteFailedForItems(ReadableArray items, String inviteSearchControllerScope) {
+        InviteSearchController controller = searchControllers.get(inviteSearchControllerScope);
 
-        if(viewToLaunchInvite == null) {
-            return;
-        }
-
-        if(viewToLaunchInvite.getListener() == null) {
+        if(controller == null) {
+            Log.w("InviteSearchModule", "Invite failed, but unable to find active controller to notify");
             return;
         }
 
@@ -85,9 +93,24 @@ class InviteSearchModule extends ReactContextBaseJavaModule {
             jvmItems.add(item.toHashMap());
         }
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("items", jvmItems);
-        viewToLaunchInvite.getListener().inviteFailedForItems(data);
+        controller.getSearchControllerDelegate().inviteFailed(controller, jvmItems);
+    }
+
+    @ReactMethod
+    public void inviteSucceeded(String inviteSearchControllerScope) {
+        InviteSearchController controller = searchControllers.get(inviteSearchControllerScope);
+
+        if(controller == null) {
+            Log.w("InviteSearchModule", "Invite succeeded, but unable to find active controller to notify");
+            return;
+        }
+
+        controller.getSearchControllerDelegate().inviteSucceeded(controller);
+        searchControllers.remove(inviteSearchControllerScope);
+    }
+
+    void removeSearchController(String inviteSearchControllerUuid) {
+        searchControllers.remove(inviteSearchControllerUuid);
     }
 
     @Override
@@ -95,9 +118,9 @@ class InviteSearchModule extends ReactContextBaseJavaModule {
         return "InviteSearch";
     }
 
-    private InviteSearchController createSearchControllerForScope(String scope) {
-        InviteSearchController searchController = new InviteSearchController();
-        searchControllers.put(scope, searchController);
+    private InviteSearchController createSearchController() {
+        InviteSearchController searchController = new InviteSearchController(this);
+        searchControllers.put(searchController.getUuid(), searchController);
         return searchController;
     }
 }

@@ -62,16 +62,12 @@ public interface JitsiMeetViewListener {
     /**
      * Called when the add user button is tapped.
      *
-     * @param data map with "userSearch" key with the {@link InviteSearchController} object
+     * @param inviteSearchController {@code InviteSearchController} scoped
+     * for this user invite flow. The {@code InviteSearchController} is used
+     * to start user queries and accepts an {@code InviteSearchControllerDelegate}
+     * for receiving user query responses.
      */
-    void launchNativeInvite(Map<String, Object> data);
-
-    /**
-     * Called when an invitation fails for one or many items.
-     *
-     * @param data map with "items" key with an array of the {@link Map<String, Object>} items that failed to be invited
-     */
-    void inviteFailedForItems(Map<String, Object> data);
+    void launchNativeInvite(InviteSearchController inviteSearchController);
 
     /**
      * Called when loading the main configuration file from the Jitsi Meet
