@@ -170,9 +170,9 @@ function _onPerformQueryAction({ query, inviteScope }) {
         dialOutAuthUrl,
         enableAddPeople: isAddPeopleEnabled(state),
         enableDialOut: isDialOutEnabled(state),
+        jwt: state['features/base/jwt'].jwt,
         peopleSearchQueryTypes,
-        peopleSearchUrl,
-        jwt: state['features/base/jwt'].jwt
+        peopleSearchUrl
     };
 
     getInviteResultsForQuery(query, options)
@@ -209,15 +209,11 @@ function _onPerformQueryAction({ query, inviteScope }) {
  */
 function _onPerformSubmitInviteAction({ selectedItems, inviteScope }) {
     const { dispatch, getState } = this; // eslint-disable-line no-invalid-this
-
     const state = getState();
-
     const { conference } = state['features/base/conference'];
-
     const {
         inviteServiceUrl
     } = state['features/base/config'];
-
     const options = {
         conference,
         inviteServiceUrl,

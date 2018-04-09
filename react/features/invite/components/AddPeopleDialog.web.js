@@ -433,9 +433,9 @@ class AddPeopleDialog extends Component<*, *> {
             dialOutAuthUrl: _dialOutAuthUrl,
             enableAddPeople,
             enableDialOut,
+            jwt: _jwt,
             peopleSearchQueryTypes: _peopleSearchQueryTypes,
-            peopleSearchUrl: _peopleSearchUrl,
-            jwt: _jwt
+            peopleSearchUrl: _peopleSearchUrl
         };
 
         return getInviteResultsForQuery(query, options);

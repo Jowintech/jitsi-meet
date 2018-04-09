@@ -425,7 +425,6 @@ export function sendInvitesForItems(
  */
 export function isAddPeopleEnabled(state: Object): boolean {
     const { app } = state['features/app'];
-
     const { isGuest } = state['features/base/jwt'];
 
     return !isGuest && Boolean(app && app.props.addPeopleEnabled);
@@ -441,7 +440,6 @@ export function isDialOutEnabled(state: Object): boolean {
     const { conference } = state['features/base/conference'];
     const { isGuest } = state['features/base/jwt'];
     const { enableUserRolesBasedOnToken } = state['features/base/config'];
-
     const participant = getLocalParticipant(state);
 
     return participant && participant.role === PARTICIPANT_ROLE.MODERATOR
