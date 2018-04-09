@@ -95,12 +95,12 @@ RCT_EXPORT_METHOD(launchNativeInvite:(NSString *)scope) {
         return;
     }
 
-    InviteSearchController* searchController = [searchControllers objectForKey:scope];
-    if (!searchController) {
-        searchController = [self makeInviteSearchController];
-    }
-
     if ([delegate respondsToSelector:@selector(launchNativeInviteForSearchController:)]) {
+        InviteSearchController* searchController = [searchControllers objectForKey:scope];
+        if (!searchController) {
+            searchController = [self makeInviteSearchController];
+        }
+
         [delegate launchNativeInviteForSearchController:searchController];
     }
 }
