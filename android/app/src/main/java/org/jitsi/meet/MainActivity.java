@@ -19,12 +19,14 @@ package org.jitsi.meet;
 import android.os.Bundle;
 import android.util.Log;
 
+import org.jitsi.meet.sdk.InviteSearchController;
 import org.jitsi.meet.sdk.JitsiMeetActivity;
 import org.jitsi.meet.sdk.JitsiMeetView;
 import org.jitsi.meet.sdk.JitsiMeetViewListener;
 
 import com.calendarevents.CalendarEventsPackage;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -85,13 +87,8 @@ public class MainActivity extends JitsiMeetActivity {
                 }
 
                 @Override
-                public void launchNativeInvite(Map<String, Object> data) {
-                    on("LAUNCH_NATIVE_INVITE", data);
-                }
-
-                @Override
-                public void inviteFailedForItems(Map<String, Object> data) {
-                    on("INVITE_FAILED_FOR_ITEMS", data);
+                public void launchNativeInvite(InviteSearchController inviteSearchController) {
+                    on("LAUNCH_NATIVE_INVITE", new HashMap<String, Object>());
                 }
 
                 @Override

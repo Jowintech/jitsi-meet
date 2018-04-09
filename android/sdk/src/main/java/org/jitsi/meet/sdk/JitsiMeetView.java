@@ -273,13 +273,16 @@ public class JitsiMeetView extends FrameLayout {
     }
 
     /**
-     * Sends JavaScript event to perform the query
+     * Starts a query for users to invite to the conference.  Results will be
+     * returned through the {@link InviteSearchController.InviteSearchControllerDelegate#onReceiveResults(InviteSearchController, List, String)}
+     * method.
      *
-     * @param query
+     * @param query {@code String} to use for the query
      */
-    public static void onInviteQuery(String query) {
+    public static void onInviteQuery(String query, String inviteSearchControllerScope) {
         WritableNativeMap params = new WritableNativeMap();
         params.putString("query", query);
+        params.putString("inviteScope", inviteSearchControllerScope);
         sendEvent("performQueryAction", params);
     }
 
@@ -290,8 +293,11 @@ public class JitsiMeetView extends FrameLayout {
      *                  Each map representing a selected item should match the data passed
      *                  back in the return from a query.
      */
-    public static void submitSelectedItems(WritableArray selectedItems) {
-        sendEvent("performSubmitInviteAction", selectedItems);
+    public static void submitSelectedItems(WritableArray selectedItems, String inviteSearchControllerScope) {
+        WritableNativeMap params = new WritableNativeMap();
+        params.putArray("selectedItems", selectedItems);
+        params.putString("inviteScope", inviteSearchControllerScope);
+        sendEvent("performSubmitInviteAction", params);
     }
 
     /**
@@ -316,11 +322,21 @@ public class JitsiMeetView extends FrameLayout {
     }
 
     /**
+     * Whether user invitation is enabled.
+     */
+    private boolean addPeopleEnabled;
+
+    /**
      * The default base {@code URL} used to join a conference when a partial URL
      * (e.g. a room name only) is specified to {@link #loadURLString(String)} or
      * {@link #loadURLObject(Bundle)}.
      */
     private URL defaultURL;
+
+    /**
+     * Whether the ability to add users by phone number is enabled.
+     */
+    private boolean dialOutEnabled;
 
     /**
      * The unique identifier of this {@code JitsiMeetView} within the process
@@ -352,16 +368,6 @@ public class JitsiMeetView extends FrameLayout {
      * Whether the Welcome page is enabled.
      */
     private boolean welcomePageEnabled;
-
-    /**
-     * Whether user invitation is enabled
-     */
-    private boolean addPeopleEnabled;
-
-    /**
-     * Whether the ability to add users by phone number is enabled
-     */
-    private boolean dialOutEnabled;
 
     public JitsiMeetView(@NonNull Context context) {
         super(context);
@@ -575,6 +581,18 @@ public class JitsiMeetView extends FrameLayout {
     }
 
     /**
+     * Sets whether the ability to add users to the call is enabled.
+     * If this is enabled, an add user button will appear on the {@link JitsiMeetView}.
+     * If enabled, and the user taps the add user button,
+     * {@link JitsiMeetViewListener#launchNativeInvite(Map)} will be called.
+     *
+     * @param addPeopleEnabled {@code true} to enable the add people button; otherwise, {@code false}
+     */
+    public void setAddPeopleEnabled(boolean addPeopleEnabled) {
+        this.addPeopleEnabled = addPeopleEnabled;
+    }
+
+    /**
      * Sets the default base {@code URL} used to join a conference when a
      * partial URL (e.g. a room name only) is specified to
      * {@link #loadURLString(String)} or {@link #loadURLObject(Bundle)}. Must be
@@ -585,6 +603,18 @@ public class JitsiMeetView extends FrameLayout {
      */
     public void setDefaultURL(URL defaultURL) {
         this.defaultURL = defaultURL;
+    }
+
+    /**
+     * Sets whether the ability to add phone numbers to the call is enabled.
+     * Must be enabled along with {@link #setAddPeopleEnabled(boolean)} to
+     * be effective.
+     *
+     * @param dialOutEnabled {@code true} to enable the ability to add
+     *                       phone numbers to the call; otherwise, {@code false}
+     */
+    public void setDialOutEnabled(boolean dialOutEnabled) {
+        this.dialOutEnabled = dialOutEnabled;
     }
 
     /**
@@ -619,29 +649,5 @@ public class JitsiMeetView extends FrameLayout {
      */
     public void setWelcomePageEnabled(boolean welcomePageEnabled) {
         this.welcomePageEnabled = welcomePageEnabled;
-    }
-
-    /**
-     * Sets whether the ability to add users to the call is enabled.
-     * If this is enabled, an add user button will appear on the {@link JitsiMeetView}.
-     * If enabled, and the user taps the add user button,
-     * {@link JitsiMeetViewListener#launchNativeInvite(Map)} will be called.
-     *
-     * @param addPeopleEnabled {@code true} to enable the add people button; otherwise, {@code false}
-     */
-    public void setAddPeopleEnabled(boolean addPeopleEnabled) {
-        this.addPeopleEnabled = addPeopleEnabled;
-    }
-
-    /**
-     * Sets whether the ability to add phone numbers to the call is enabled.
-     * Must be enabled along with {@link #setAddPeopleEnabled(boolean)} to
-     * be effective.
-     *
-     * @param dialOutEnabled {@code true} to enable the ability to add
-     *                       phone numbers to the call; otherwise, {@code false}
-     */
-    public void setDialOutEnabled(boolean dialOutEnabled) {
-        this.dialOutEnabled = dialOutEnabled;
     }
 }
