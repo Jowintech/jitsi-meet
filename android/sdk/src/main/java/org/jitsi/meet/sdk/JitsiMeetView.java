@@ -32,10 +32,8 @@ import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.LifecycleState;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.rnimmersive.RNImmersiveModule;
 
 import java.net.URL;
@@ -134,6 +132,26 @@ public class JitsiMeetView extends FrameLayout {
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
+    }
+
+    /**
+     * Finds a native React module for given class.
+     *
+     * @param nativeModuleClass the native module's class for which an instance
+     * is to be retrieved from the {@link #reactInstanceManager}.
+     * @param <T> the module's type.
+     * @return {@link NativeModule} instance for given interface type or
+     * {@code null} if no instance for this interface is available, or if
+     * {@link #reactInstanceManager} has not been initialized yet.
+     */
+    private static <T extends NativeModule> T getNativeModule(
+            Class<T> nativeModuleClass) {
+        ReactContext reactContext
+            = reactInstanceManager != null
+                ? reactInstanceManager.getCurrentReactContext() : null;
+
+        return reactContext != null
+                ? reactContext.getNativeModule(nativeModuleClass) : null;
     }
 
     /**
@@ -257,37 +275,7 @@ public class JitsiMeetView extends FrameLayout {
         }
     }
 
-    /**
-     * Activity lifecycle method which should be called from
-     * {@code Activity.onUserLeaveHint} so we can do the required internal
-     * processing.
-     *
-     * This is currently not mandatory.
-     */
-    public static void onUserLeaveHint() {
-        sendEvent("onUserLeaveHint", null);
-    }
-
-    /**
-     * Helper function to send an event to JavaScript.
-     *
-     * @param eventName {@code String} containing the event name.
-     * @param params {@code WritableMap} optional ancillary data for the event.
-     */
-    private static void sendEvent(
-            String eventName,
-            @Nullable WritableMap params) {
-        if (reactInstanceManager != null) {
-            ReactContext reactContext
-                = reactInstanceManager.getCurrentReactContext();
-            if (reactContext != null) {
-                reactContext
-                    .getJSModule(
-                        DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit(eventName, params);
-            }
-        }
-    }
+    private String conferenceUrl;
 
     /**
      * The default base {@code URL} used to join a conference when a partial URL
@@ -496,6 +484,37 @@ public class JitsiMeetView extends FrameLayout {
             urlObject.putString("url", urlString);
         }
         loadURLObject(urlObject);
+    }
+
+    void setCurrentConferenceUrl(String conferenceUrl) {
+        System.err.println(hashCode()+ " EXT CONF URL: " + conferenceUrl);
+        this.conferenceUrl = conferenceUrl;
+    }
+
+    /**
+     * Activity lifecycle method which should be called from
+     * {@code Activity.onUserLeaveHint} so we can do the required internal
+     * processing.
+     *
+     * This is currently not mandatory, but if used will provide automatic
+     * handling of the picture in picture mode when user minimizes the app. It
+     * will be probably the most useful in case the app is using the welcome
+     * page.
+     */
+    public void onUserLeaveHint() {
+        if (getPictureInPictureEnabled() && conferenceUrl != null) {
+            PictureInPictureModule pipModule
+                = getNativeModule(PictureInPictureModule.class);
+
+            if (pipModule != null) {
+                try {
+                    pipModule.enterPictureInPicture();
+                } catch (RuntimeException exc) {
+                    Log.e(
+                        TAG, "onUserLeaveHint: failed to enter PiP mode", exc);
+                }
+            }
+        }
     }
 
     /**

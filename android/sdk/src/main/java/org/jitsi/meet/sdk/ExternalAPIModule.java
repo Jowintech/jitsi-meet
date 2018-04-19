@@ -130,6 +130,12 @@ class ExternalAPIModule extends ReactContextBaseJavaModule {
             return;
         }
 
+        if (name.equals("CONFERENCE_WILL_JOIN")) {
+            view.setCurrentConferenceUrl(data.getString("url"));
+        } else if (name.equals("CONFERENCE_WILL_LEAVE")) {
+            view.setCurrentConferenceUrl(null);
+        }
+
         JitsiMeetViewListener listener = view.getListener();
 
         if (listener == null) {
