@@ -493,7 +493,6 @@ public class JitsiMeetView extends FrameLayout {
     }
 
     void setCurrentConferenceUrl(String conferenceUrl) {
-        System.err.println(hashCode()+ " EXT CONF URL: " + conferenceUrl);
         this.conferenceUrl = conferenceUrl;
     }
 
