@@ -275,7 +275,13 @@ public class JitsiMeetView extends FrameLayout {
         }
     }
 
-    private String conferenceUrl;
+    /**
+     * Stores the current conference URL. Will have a value when the app is in a conference.
+     *
+     * Currently one thread writes and one thread reads, so it should be fine to have this field
+     * volatile without additional synchronization.
+     */
+    private volatile String conferenceUrl;
 
     /**
      * The default base {@code URL} used to join a conference when a partial URL
