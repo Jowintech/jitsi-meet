@@ -136,7 +136,7 @@ class ExternalAPIModule extends ReactContextBaseJavaModule {
             break;
 
         case "CONFERENCE_FAILED":
-        case "CONFERENCE_WILL_EAVE":
+        case "CONFERENCE_WILL_LEAVE":
         case "LOAD_CONFIG_ERROR":
             view.setCurrentConferenceUrl(null);
             break;
