@@ -130,15 +130,20 @@ class ExternalAPIModule extends ReactContextBaseJavaModule {
             return;
         }
 
+        String url = data.getString("url");
+
         switch(name) {
         case "CONFERENCE_WILL_JOIN":
-            view.setCurrentConferenceUrl(data.getString("url"));
+            view.setCurrentConferenceUrl(url);
             break;
 
         case "CONFERENCE_FAILED":
         case "CONFERENCE_WILL_LEAVE":
         case "LOAD_CONFIG_ERROR":
-            view.setCurrentConferenceUrl(null);
+            // Abandon the conference only if it's for the current URL
+            if (url != null && url.equals(view.getCurrentConferenceUrl())) {
+                view.setCurrentConferenceUrl(null);
+            }
             break;
         }
 

@@ -352,6 +352,10 @@ public class JitsiMeetView extends FrameLayout {
         }
     }
 
+    public String getCurrentConferenceUrl() {
+        return conferenceUrl;
+    }
+
     /**
      * Gets the default base {@code URL} used to join a conference when a
      * partial URL (e.g. a room name only) is specified to
