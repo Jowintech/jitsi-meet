@@ -61,6 +61,8 @@ export function initLib() {
             initPromise
                 .then(() => dispatch({ type: LIB_DID_INIT }))
                 .catch(error => {
+                    // TODO: See the comment in the connect action in
+                    // base/connection/actions.web.js.
                     if (typeof APP === 'undefined') {
                         dispatch(libInitError(error));
                     }
