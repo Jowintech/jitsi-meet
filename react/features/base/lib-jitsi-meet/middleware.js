@@ -5,8 +5,9 @@ import { setLoggingConfig } from '../logging';
 import { PARTICIPANT_LEFT } from '../participants';
 import { MiddlewareRegistry } from '../redux';
 
+import JitsiMeetJS from './_';
 import { disposeLib, initLib, setWebRTCReady } from './actions';
-import { LIB_DID_INIT, LIB_INIT_ERROR } from './actionTypes';
+import { LIB_DID_INIT, LIB_INIT_ERROR, LIB_WILL_INIT } from './actionTypes';
 import { WEBRTC_NOT_READY, WEBRTC_NOT_SUPPORTED } from './constants';
 
 declare var APP: Object;
@@ -23,9 +24,18 @@ declare var APP: Object;
  */
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
+    case LIB_WILL_INIT:
+        // Moved from conference.js init method. It appears the error handlers
+        // are not used for mobile.
+        if (typeof APP !== 'undefined') {
+            _setErrorHandlers();
+        }
+        break;
     case LIB_DID_INIT:
-        // The web version doesn't need this action during initialization
-        // because it is still using the old logic from conference.js.
+        // FIXME: The web version doesn't need this action during initialization
+        // because it is still using the old logic from conference.js. We still
+        // have to reactify the old logic from conference.js and then maybe
+        // we'll need this action for web too.
         if (typeof APP === 'undefined') {
             store.dispatch(setWebRTCReady(true));
         }
@@ -124,4 +134,37 @@ function _setConfig({ dispatch, getState }, next, action) {
     dispatch(initLib());
 
     return result;
+}
+
+/**
+ * Attaches our custom error handlers to the window object.
+ *
+ * @returns {void}
+ */
+function _setErrorHandlers() {
+    // attaches global error handler, if there is already one, respect it
+    if (JitsiMeetJS.getGlobalOnErrorHandler) {
+        const oldOnErrorHandler = window.onerror;
+
+        // eslint-disable-next-line max-params
+        window.onerror = (message, source, lineno, colno, error) => {
+            JitsiMeetJS.getGlobalOnErrorHandler(
+                message, source, lineno, colno, error);
+
+            if (oldOnErrorHandler) {
+                oldOnErrorHandler(message, source, lineno, colno, error);
+            }
+        };
+
+        const oldOnUnhandledRejection = window.onunhandledrejection;
+
+        window.onunhandledrejection = function(event) {
+            JitsiMeetJS.getGlobalOnErrorHandler(
+                null, null, null, null, event.reason);
+
+            if (oldOnUnhandledRejection) {
+                oldOnUnhandledRejection(event);
+            }
+        };
+    }
 }

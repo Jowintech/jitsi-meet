@@ -35,7 +35,8 @@ ReducerRegistry.register(
             return {
                 ...state,
                 initError: action.error,
-                initialized: false
+                initialized: false,
+                initPromise: undefined
             };
 
         case LIB_INIT_PROMISE_CREATED:

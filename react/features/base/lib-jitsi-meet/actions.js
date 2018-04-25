@@ -61,7 +61,9 @@ export function initLib() {
             initPromise
                 .then(() => dispatch({ type: LIB_DID_INIT }))
                 .catch(error => {
-                    dispatch(libInitError(error));
+                    if (typeof APP === 'undefined') {
+                        dispatch(libInitError(error));
+                    }
 
                     // TODO Handle LIB_INIT_ERROR error somewhere instead.
                     console.error('lib-jitsi-meet failed to init:', error);
